@@ -72,7 +72,7 @@ def extract_frames(video_file):
     container = av.open(video_file)
     total_frames = container.streams.video[0].frames
     frame_rate = container.streams.video[0].average_rate
-    chunk_duration = 1
+    chunk_duration = 2
     frames_per_chunk = chunk_duration * frame_rate
 
     # Calculate the number of chunks
@@ -138,10 +138,10 @@ def generate_captions(frames_list, seg_len):
     }
 
     prompt = """
-Generate a coherent video description by merging individual captions. 
+Generate a coherent video description by merging individual captions that belong to the same video. 
 Take the following captions, ordered chronologically, and create a cohesive and readable description. 
 You may add transition phrases or sentences for better coherence. 
-The goal is to produce a clear and engaging description of the video content.
+The goal is to produce a clear and engaging description of the video content without too much repeatation.
 
 Captions:
 """
