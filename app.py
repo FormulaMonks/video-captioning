@@ -45,38 +45,51 @@ class VideoDownloader:
     def download_youtube_video(youtube_link):
         try:
             yt = YouTube(youtube_link)
+            
+            # Get video details
+            video_title = yt.title
+            video_thumbnail_url = yt.thumbnail_url
+            
+            # Download the video
             stream = yt.streams.filter(file_extension="mp4", progressive=True).first()
-            video_file_path = stream.download()
-            return video_file_path
+            video_file = stream.download()
+            
+            return {
+                "video_file": video_file,
+                "video_title": video_title,
+                "video_thumbnail_url": video_thumbnail_url
+            }
         except Exception as e:
             st.error(f"Error downloading YouTube video: {e}")
             return None
 
-
 class CaptionGenerator:
     def __init__(self):
         self.video_processor = VideoProcessor()
+        self.prompt = """
+        Generate a coherent video description by merging individual captions that belong to the same video. 
+        Take the following captions, ordered chronologically, and create a cohesive and readable description. 
+        You may add transition phrases or sentences for better coherence. 
+        The goal is to produce a clear and engaging description of the video content without too much repetition.
+
+        """
+
+    def generate_caption(self, image):
+        return self.video_processor.model(image)[0]["generated_text"]
 
     def generate_captions(self, frames_list, seg_len):
-
-        prompt = """
-Generate a coherent video description by merging individual captions that belong to the same video. 
-Take the following captions, ordered chronologically, and create a cohesive and readable description. 
-You may add transition phrases or sentences for better coherence. 
-The goal is to produce a clear and engaging description of the video content without too much repetition.
-
-Captions:
-"""
-        for idx, frame in enumerate(frames_list):
-            pil_image = Image.fromarray(frame)
-            caption = self.video_processor.model(pil_image)[0]["generated_text"]
-            print(f"\n{idx+1}/{seg_len}: {caption}")
-            prompt += f"\n{caption}"
+        self.prompt += "\nCaptions:"
+        with st.status("Analyzing frames..."):
+            for idx, frame in enumerate(frames_list):
+                pil_image = Image.fromarray(frame)
+                caption = self.generate_caption(pil_image)
+                st.write(f"\n{idx}/{seg_len}: {caption}")
+                self.prompt += f"\n{caption}"
 
         completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "user", "content": f"{prompt}"},
+                {"role": "user", "content": f"{self.prompt}"},
             ],
         )
 
@@ -110,7 +123,10 @@ def main():
         youtube_link = st.text_input("Paste a YouTube link")
         if youtube_link:
             st.write("Downloading video from YouTube...")
-            video_file = VideoDownloader.download_youtube_video(youtube_link)
+            video_file, video_title, video_thumbnail_url = VideoDownloader.download_youtube_video(youtube_link).values()
+            caption_generator.prompt += f"\nYouTube Title: {video_title}\nYouTube Thumbnail Description: {caption_generator.generate_caption(video_thumbnail_url)}"
+            print(caption_generator.prompt)
+
     if video_file:
         st.video(video_file)
         frames, seg_len = VideoExtractor.extract_frames(video_file)
