@@ -5,7 +5,7 @@ from google.oauth2 import service_account
 from elevenlabs import set_api_key, Voice, VoiceSettings, generate, play as play_eleven
 import logging
 import streamlit as st
-from constants import LANGUAGE_CODE, ELEVEN_LABS_API_KEY
+from constants import LANGUAGE_CODE, ELEVEN_LABS_API_KEY, KEY_PATH
 import tempfile
 import os
 
