@@ -116,8 +116,8 @@ def main():
         frames, seg_len = VideoExtractor.extract_frames(video_file)
         if frames:
             caption = caption_generator.generate_captions(frames, seg_len)
-            st.write(caption)
             t2s.synthesize(caption)
+            st.write(caption)
 
 
 if __name__ == "__main__":
