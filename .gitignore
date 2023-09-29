@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/venv,visualstudio,visualstudiocode,data,database,video,images,macos,linux,python,jupyternotebooks,dotenv
 # Edit at https://www.toptal.com/developers/gitignore?templates=venv,visualstudio,visualstudiocode,data,database,video,images,macos,linux,python,jupyternotebooks,dotenv
 
+ai-ml-opt-5fecb514f42a.json
+ckpts/
+
 ### Data ###
 *.csv
 *.dat
